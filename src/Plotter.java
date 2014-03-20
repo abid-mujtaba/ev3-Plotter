@@ -15,6 +15,8 @@
  */
 
 
+import lejos.hardware.Button;
+import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.RegulatedMotor;
 
@@ -36,19 +38,109 @@ public class Plotter
 
     static final int SPEED = 50;            // The speed for all three motors
 
+    // Define the various Button IDs (extracted from the LeJOS Button class) used with result of Button.waitForAnyEvent()
+    static final int RELEASE_EVENT_SHIFT = 8;          // Bit shift required to convert button down to button up
+
+    static final int UP_Press = 0x1;
+    static final int UP_Release = UP_Press << RELEASE_EVENT_SHIFT;
+
+    static final int DOWN_Press = 0x4;
+    static final int DOWN_Release = DOWN_Press << RELEASE_EVENT_SHIFT;
+
+
+    static final int CENTER_Press = 0x2;
+
+
 
     public static void main(String[] args)
     {
         log("Program starts");
 
-
+        initiate();
 
         log("Program ends");
+    }
+
+
+    // Method for initiating the application.
+    private static void initiate()
+    {
+        LCD.clear();
+        LCD.drawString("PLOTTER", 2, 2);
+
+        pen.setSpeed(SPEED);
+        assembly.setSpeed(SPEED);
+        rover.setSpeed(SPEED);
+
+        initial_adjustment();
+
+        LCD.clear();
+        LCD.refresh();
+    }
+
+
+    // Allow the user to use the buttons to perform an adjustment of the pen and assembly placing it in the initial state (pen down and assembly all the way to the right)
+    private static void initial_adjustment()
+    {
+        boolean flag = true;
+
+        while (flag)
+        {
+            int event = Button.waitForAnyEvent();
+
+            switch (event)
+            {
+                case UP_Press:
+                    forward(pen);
+                    break;
+
+                case DOWN_Press:
+                    reverse(pen);
+                    break;
+
+                case UP_Release:
+                case DOWN_Release:
+                    stop(pen);
+                    break;
+
+                case CENTER_Press:
+                    flag = false;
+            }
+        }
+    }
+
+
+    // Methods for controlling all three of the motors in an abstract fashion:
+    private static void forward(RegulatedMotor motor)
+    {
+        motor.forward();
+    }
+
+
+    private static void reverse(RegulatedMotor motor)
+    {
+        motor.backward();
+    }
+
+
+    private static void stop(RegulatedMotor motor)
+    {
+        motor.stop();
     }
 
 
     private static void log(String msg)
     {
         System.out.println("log>\t" + msg);
+    }
+
+
+    private static void delay(long interval)         // Wait for specified amount of milliseconds
+    {
+        try
+        {
+            Thread.sleep(interval);
+        }
+        catch (InterruptedException e) {}
     }
 }
