@@ -47,6 +47,11 @@ public class Plotter
     static final int DOWN_Press = 0x4;
     static final int DOWN_Release = DOWN_Press << RELEASE_EVENT_SHIFT;
 
+    static final int LEFT_Press = 0x10;
+    static final int LEFT_Release = LEFT_Press << RELEASE_EVENT_SHIFT;
+
+    static final int RIGHT_Press = 0x8;
+    static final int RIGHT_Release = RIGHT_Press << RELEASE_EVENT_SHIFT;
 
     static final int CENTER_Press = 0x2;
 
@@ -75,6 +80,11 @@ public class Plotter
         initial_adjustment();
 
         LCD.clear();
+        LCD.drawString("PLOTTER", 2, 2);
+
+        plot();
+
+        LCD.clear();
         LCD.refresh();
     }
 
@@ -82,6 +92,8 @@ public class Plotter
     // Allow the user to use the buttons to perform an adjustment of the pen and assembly placing it in the initial state (pen down and assembly all the way to the right)
     private static void initial_adjustment()
     {
+        LCD.drawString("Adjusting ...", 4, 4);
+
         boolean flag = true;
 
         while (flag)
@@ -103,10 +115,44 @@ public class Plotter
                     stop(pen);
                     break;
 
+                case RIGHT_Press:
+                    forward(assembly);
+                    break;
+
+                case LEFT_Press:
+                    reverse(assembly);
+                    break;
+
+                case RIGHT_Release:
+                case LEFT_Release:
+                    stop(assembly);
+                    break;
+
                 case CENTER_Press:
                     flag = false;
             }
         }
+    }
+
+    // Method that tells the EV3 what to plot.
+    private static void plot()
+    {
+        rover.rotate(-120, true);       // Move the rover forward by the specified angle. immediateReturn=true implies this function returns immediately so the next one can run concurrently.
+        assembly.rotate(120, false);
+
+        raise_pen();
+    }
+
+
+    private static void raise_pen()
+    {
+        pen.rotate(40);
+    }
+
+
+    private static void lower_pen()
+    {
+        pen.rotate(-40);
     }
 
 
