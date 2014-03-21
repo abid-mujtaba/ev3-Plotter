@@ -57,6 +57,14 @@ public class Plotter
 
 
 
+    static final int ASSEMBLY_LENGTH = 120;     // Rotation angle for the assembly that makes it move across it's entire length
+    static final int PEN_LENGTH = 40;           // Angle that lifts pen sufficiently
+    static final int ROVER_LENGTH = 75;         // Angle that moves rover forward equal to the full range of motion of the assembly
+
+    static int mAssemblyPos = 0;            // Keeps track of the current position of the assembly
+
+
+
     public static void main(String[] args)
     {
         log("Program starts");
@@ -77,6 +85,7 @@ public class Plotter
         assembly.setSpeed(SPEED);
         rover.setSpeed(SPEED);
 
+        lejos.hardware.Sound.beep();            // Announces that the EV3 is ready for user input
         initial_adjustment();
 
         LCD.clear();
@@ -137,8 +146,11 @@ public class Plotter
     // Method that tells the EV3 what to plot.
     private static void plot()
     {
-        rover.rotate(-120, true);       // Move the rover forward by the specified angle. immediateReturn=true implies this function returns immediately so the next one can run concurrently.
-        assembly.rotate(120, false);
+        left(80, false);
+        forward(80, false);
+
+        right(80, true);
+        reverse(80, false);
 
         raise_pen();
     }
@@ -146,14 +158,64 @@ public class Plotter
 
     private static void raise_pen()
     {
-        pen.rotate(40);
+        pen.rotate(PEN_LENGTH);
     }
 
 
     private static void lower_pen()
     {
-        pen.rotate(-40);
+        pen.rotate(-PEN_LENGTH);
     }
+
+
+    private static void right(int percent, boolean immediate_return)
+    {
+        move_assembly(-percent, immediate_return);
+    }
+
+
+    private static void left(int percent, boolean immediate_return)
+    {
+        move_assembly(percent, immediate_return);
+    }
+
+
+    private static void move_assembly(int percent, boolean immediate_return)
+    {
+        int angle = (int) (percent / 100.0 * ASSEMBLY_LENGTH);
+        int new_angle = angle + mAssemblyPos;
+
+        if (new_angle < 0 || new_angle > ASSEMBLY_LENGTH)           // The new motion will cause the assembly to come of the end of the tracks
+        {
+            log("Error: Moving by this angle will cause assembly to move off tracks. Motion Denied.");
+            return;
+        }
+
+        assembly.rotate(angle, immediate_return);
+
+        mAssemblyPos += angle;      // Update the current position of the assembly
+    }
+
+
+    private static void forward(int percent, boolean immediate_return)
+    {
+        move_rover(-percent, immediate_return);
+    }
+
+
+    private static void reverse(int percent, boolean immediate_return)
+    {
+        move_rover(percent, immediate_return);
+    }
+
+
+    private static void move_rover(int percent, boolean immediate_return)
+    {
+        int angle = (int) (percent / 100.0 * ROVER_LENGTH);
+
+        rover.rotate(angle, immediate_return);
+    }
+
 
 
     // Methods for controlling all three of the motors in an abstract fashion:
