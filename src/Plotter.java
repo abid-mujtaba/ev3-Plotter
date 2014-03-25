@@ -36,7 +36,7 @@ public class Plotter
     static RegulatedMotor assembly = Motor.B;
     static RegulatedMotor rover = Motor.C;
 
-    static final int SPEED = 100;            // The speed for all three motors
+    static final int SPEED = 75;            // The speed for all three motors
 
     // Define the various Button IDs (extracted from the LeJOS Button class) used with result of Button.waitForAnyEvent()
     static final int RELEASE_EVENT_SHIFT = 8;          // Bit shift required to convert button down to button up
@@ -147,9 +147,15 @@ public class Plotter
     // Method that tells the EV3 what to plot.
     private static void plot()
     {
-        polar(10, 180);      // Move left
-        polar(10, 90);       // Move forward
-        polar(14.14, 315);   // Move diagonally back to the origin
+        // Draw a heart
+        polar(2, 120);
+        polar(3, 210);
+        polar(3, 150);
+        polar(2, 210);
+        polar(3, 285);
+        polar(5, 315);
+        polar(5, 45);
+        polar(3, 75);
 
         raise_pen();
     }
